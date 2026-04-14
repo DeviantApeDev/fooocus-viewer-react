@@ -393,7 +393,7 @@ export default function App() {
 
       <p className="p-5">
         <span className="mx-5">Release 2.0.0</span>
-        <a href="https://github.com/toutjavascript/Fooocus-Log-Viewer/" target="_blank" rel="noopener noreferrer" className="underline text-slate-200 hover:text-slate-50">
+        <a href="https://github.com/DeviantApeDev/fooocus-viewer-react" target="_blank" rel="noopener noreferrer" className="underline text-slate-200 hover:text-slate-50">
           Bug report/ideas/discussions on GitHub
         </a>
       </p>

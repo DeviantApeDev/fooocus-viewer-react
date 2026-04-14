@@ -15,32 +15,33 @@ A Single Page Application built with Vite, React, and Tailwind CSS that serves a
 - **Single-file build** - Everything bundled into one HTML file for easy deployment
 
 ## Installation
-Put the dist/index.html file in your Fooocus's output folder and RENAME it to viewer.html
+Put the dist/viewer.html file in your Fooocus's output folder
+Open http://localhost:7865/file=outputs/viewer.html while Fooocus is running
 
 ## Cleanup Script (Node.js Required)
 
-The `cleanup-missing-images.js` script scans your Fooocus `log.html` files for entries that reference images no longer present on disk. This is useful after deleting images manually.
+The `cleanup-missing-images.js` script scans your Fooocus `log.html` files for entries that reference images which no longer exist (deleted images).
 
 ### Usage
 
-**Dry-run** (default) - Lists missing entries without modifying any files:
+**Dry-run** (default) - Lists missing entries without deleting them:
 ```bash
 node cleanup-missing-images.js
 ```
 
-**Custom directory** - Specify the outputs path directly:
+**Custom directory** - Specify the outputs path directly (default to current directory):
 ```bash
 node cleanup-missing-images.js /path/to/fooocus/outputs
 ```
 
-Combine with `--delete` to actually remove the orphaned entries:
+Combine with `--delete` to actually remove the deleted entries:
 ```bash
 node cleanup-missing-images.js /path/to/fooocus/outputs --delete
 ```
 
 ### Node.js Installation Guide 
 
-Node.js is required to run the development server and build the app, and run the cleanup script.
+Node.js is ONLY required to run the development server, build the app, and run the cleanup script.
 
 **Windows:**
 ```bash
@@ -69,18 +70,10 @@ node --version
 npm --version
 ```
 
-## Project Structure
+## Donate: consider donating if you find this app useful
+![giphy](https://github.com/user-attachments/assets/5598d04c-47e3-4260-bbfa-c3729d01f6d5)
 
-```
-src/
-  main.jsx              # Entry point
-  App.jsx               # Root component with state management
-  index.css             # Tailwind + custom styles
-  components/           # React UI components
-  hooks/                # Custom hooks (localStorage, etc.)
-  utils/                # Parsing, search, batch diff utilities
-  data/                 # Configuration constants
-cleanup-missing-images.js  # Log cleanup script
-vite.config.js          # Vite configuration (single-file build)
-tailwind.config.js      # Tailwind CSS configuration
-```
+[Paypal](https://www.paypal.com/paypalme/DeviantApeArt)
+
+[Kofi](https://ko-fi.com/deviantape)
+
