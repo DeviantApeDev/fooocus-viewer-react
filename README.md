@@ -1,0 +1,86 @@
+# Fooocus Log Viewer
+
+A Single Page Application built with Vite, React, and Tailwind CSS that serves as a log viewer for [Fooocus](https://github.com/lllyasviel/Fooocus) AI image generation. It parses `log.html` files from Fooocus outputs, displays generated images in a responsive gallery, and provides tools for searching, comparing, and managing your image generation history. Improvement of the great project by [toutjavascript](https://github.com/toutjavascript/Fooocus-Log-Viewer). Greatly improving app performance and fixes for many bugs.
+
+## Features
+
+- **Image Gallery** - Responsive grid with pagination and column control
+- **Zoom & Metadata** - Click any image to view full-size with complete generation settings
+- **Search** - Full-text search across prompts, filter by model and styles
+- **Calendar View** - Navigate through dates with image counts
+- **Batch Comparison** - Compare settings between batches using diff highlighting
+- **Auto-reload** - Polls every 5 seconds for new images on the current day
+- **Notifications** - Sound and toast alerts for new images
+- **Download & Copy** - Download images or copy metadata to clipboard
+- **Single-file build** - Everything bundled into one HTML file for easy deployment
+
+## Installation
+Put the dist/index.html file in your Fooocus's output folder and RENAME it to viewer.html
+
+## Cleanup Script (Node.js Required)
+
+The `cleanup-missing-images.js` script scans your Fooocus `log.html` files for entries that reference images no longer present on disk. This is useful after deleting images manually.
+
+### Usage
+
+**Dry-run** (default) - Lists missing entries without modifying any files:
+```bash
+node cleanup-missing-images.js
+```
+
+**Custom directory** - Specify the outputs path directly:
+```bash
+node cleanup-missing-images.js /path/to/fooocus/outputs
+```
+
+Combine with `--delete` to actually remove the orphaned entries:
+```bash
+node cleanup-missing-images.js /path/to/fooocus/outputs --delete
+```
+
+### Node.js Installation Guide 
+
+Node.js is required to run the development server and build the app, and run the cleanup script.
+
+**Windows:**
+```bash
+winget install OpenJS.NodeJS
+```
+Or download the LTS installer from https://nodejs.org
+
+**macOS:**
+```bash
+brew install node
+```
+Or download from https://nodejs.org
+
+**Linux:**
+```bash
+# Debian/Ubuntu
+sudo apt install nodejs npm
+
+# Arch
+sudo pacman -S nodejs npm
+```
+
+**Verify installation:**
+```bash
+node --version
+npm --version
+```
+
+## Project Structure
+
+```
+src/
+  main.jsx              # Entry point
+  App.jsx               # Root component with state management
+  index.css             # Tailwind + custom styles
+  components/           # React UI components
+  hooks/                # Custom hooks (localStorage, etc.)
+  utils/                # Parsing, search, batch diff utilities
+  data/                 # Configuration constants
+cleanup-missing-images.js  # Log cleanup script
+vite.config.js          # Vite configuration (single-file build)
+tailwind.config.js      # Tailwind CSS configuration
+```
