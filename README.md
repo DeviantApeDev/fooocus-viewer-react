@@ -16,6 +16,7 @@ A Single Page Application built with Vite, React, and Tailwind CSS that serves a
 
 ## Installation
 Put the dist/viewer.html file in your Fooocus's output folder
+
 Open http://localhost:7865/file=outputs/viewer.html while Fooocus is running
 
 ## Cleanup Script (Node.js Required)
