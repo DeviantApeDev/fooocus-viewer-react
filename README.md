@@ -15,7 +15,7 @@ A Single Page Application built with Vite, React, and Tailwind CSS that serves a
 - **Single-file build** - Everything bundled into one HTML file for easy deployment
 
 ## Installation
-Put the dist/viewer.html file in your Fooocus's output folder
+Put the [dist/viewer.html](https://github.com/DeviantApeDev/fooocus-viewer-react/blob/main/dist/viewer.html) file in your Fooocus's output folder
 
 Open http://localhost:7865/file=outputs/viewer.html while Fooocus is running
 
