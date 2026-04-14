@@ -21,7 +21,7 @@ Open http://localhost:7865/file=outputs/viewer.html while Fooocus is running
 
 ## Cleanup Script (Node.js Required)
 
-The `cleanup-missing-images.js` script scans your Fooocus `log.html` files for entries that reference images which no longer exist (deleted images).
+The `cleanup-missing-images.js` script scans your Fooocus `log.html` files for entries that reference images which no longer exist. This will prevent deleted images metadata from appearing in the Log Viewer.
 
 ### Usage
 
