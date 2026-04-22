@@ -3,7 +3,7 @@ import { formatFilesize, downloadImage } from '../utils/imageUtils'
 import { decodeFooocusJSON } from '../utils/parseLog'
 import { getParam, saveParam } from '../hooks/useLocalStorage'
 
-export default function ZoomModal({ image, allImages, filterImages, onClose, addToast }) {
+export default function ZoomModal({ image, allImages, filterImages, onClose, addToast, selectedImages, toggleSelection }) {
   const imageList = filterImages || allImages
   const [currentIndex, setCurrentIndex] = useState(image.index || 0)
   const [showMeta, setShowMeta] = useState(getParam("displayMetaBlock") !== "false")
@@ -11,6 +11,7 @@ export default function ZoomModal({ image, allImages, filterImages, onClose, add
   const [imgFileSize, setImgFileSize] = useState(0)
 
   const currentImage = imageList[currentIndex] || image
+  const isSelected = selectedImages.has(currentImage.src)
   const imgDateStr = currentImage.src.split("_")[0]
   const src = `./${imgDateStr}/${currentImage.src}`
   const json = JSON.stringify(currentImage)
@@ -129,6 +130,14 @@ export default function ZoomModal({ image, allImages, filterImages, onClose, add
           >
             &#x2B07;
           </button>
+          <button
+            className="text-2xl hover:opacity-70"
+            style={{ color: isSelected ? '#dc2626' : '#fff' }}
+            onClick={(e) => { e.stopPropagation(); toggleSelection(currentImage.src) }}
+            title={isSelected ? 'Unmark for deletion' : 'Mark for deletion'}
+          >
+            &#x1F5D1;
+          </button>
           <span className="text-white text-lg font-bold" style={{ textShadow: '2px 2px 2px #000' }}>
             {currentImage.src}
           </span>
@@ -168,7 +177,12 @@ export default function ZoomModal({ image, allImages, filterImages, onClose, add
           </button>
         )}
 
-        <img src={src} alt="" className="absolute inset-0 w-full h-full object-contain" />
+        <img
+          src={src}
+          alt=""
+          className="absolute inset-0 w-full h-full object-contain"
+          style={{ border: isSelected ? '4px solid #dc2626' : '4px solid transparent' }}
+        />
 
         {currentIndex < imageList.length - 1 && (
           <button

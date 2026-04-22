@@ -2,10 +2,11 @@ import React, { useState } from 'react'
 import { downloadImage } from '../utils/imageUtils'
 import { decodeFooocusJSON } from '../utils/parseLog'
 
-export default function ImageCard({ data, index, maxIndex, setZoomImage, onError, addToast }) {
+export default function ImageCard({ data, index, maxIndex, setZoomImage, onError, addToast, selectedImages, toggleSelection }) {
   const [isHovered, setIsHovered] = useState(false)
   const [dimensions, setDimensions] = useState(null)
   const [hasError, setHasError] = useState(false)
+  const isSelected = selectedImages.has(data.src)
 
   const dateStr = data.src.split("_")[0]
   const src = `./${dateStr}/${data.src}`
@@ -43,6 +44,7 @@ export default function ImageCard({ data, index, maxIndex, setZoomImage, onError
       className="relative"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      style={{ border: isSelected ? '2px solid #dc2626' : '2px solid transparent', borderRadius: '4px' }}
     >
       <img
         src={src}
@@ -66,6 +68,20 @@ export default function ImageCard({ data, index, maxIndex, setZoomImage, onError
           >
             Metadatas: click to copy all
           </div>
+
+          <label
+            className="absolute top-0 right-0 flex items-center justify-center cursor-pointer"
+            style={{ width: '28px', height: '28px', background: 'rgba(0,0,0,0.7)', borderRadius: '0 0 0 4px' }}
+            title="Select for deletion"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <input
+              type="checkbox"
+              checked={isSelected}
+              onChange={() => toggleSelection(data.src)}
+              className="w-4 h-4 cursor-pointer"
+            />
+          </label>
 
           {dimensions && (
             <div

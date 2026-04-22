@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import ImageCard from './ImageCard'
 
-export default function BatchGallery({ batch, showDiff, showDetail, numColumns, setZoomImage, sortedData, addToast }) {
+export default function BatchGallery({ batch, showDiff, showDetail, numColumns, setZoomImage, sortedData, addToast, selectedImages, toggleSelection }) {
   const numBatchImages = batch.endIndex - batch.startIndex + 1
   const [notFoundCount, setNotFoundCount] = useState(0)
 
@@ -117,6 +117,8 @@ export default function BatchGallery({ batch, showDiff, showDetail, numColumns, 
               setZoomImage={setZoomImage}
               addToast={addToast}
               onError={() => setNotFoundCount(prev => prev + 1)}
+              selectedImages={selectedImages}
+              toggleSelection={toggleSelection}
             />
           ))}
         </div>

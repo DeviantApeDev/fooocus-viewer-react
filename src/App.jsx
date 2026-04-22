@@ -10,6 +10,8 @@ import CalendarList from './components/CalendarList'
 import ZoomModal from './components/ZoomModal'
 import NotificationToast from './components/NotificationToast'
 import ConfigPanel from './components/ConfigPanel'
+import DeleteBar from './components/DeleteBar'
+import DeleteConfirmModal from './components/DeleteConfirmModal'
 
 export default function App() {
   const [date, setDate] = useState(() => {
@@ -38,6 +40,8 @@ export default function App() {
   const [promiseAll, setPromiseAll] = useState(false)
   const [toasts, setToasts] = useState([])
   const [nbTodayImages, setNbTodayImages] = useState(0)
+  const [selectedImages, setSelectedImages] = useState(new Set())
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const lastLogSizeRef = useRef(null)
   const playSoundRef = useRef(true)
   const nbTodayImagesRef = useRef(0)
@@ -64,6 +68,61 @@ export default function App() {
   const removeToast = useCallback((id) => {
     setToasts(prev => prev.filter(t => t.id !== id))
   }, [])
+
+  const toggleSelection = useCallback((src) => {
+    setSelectedImages(prev => {
+      const next = new Set(prev)
+      if (next.has(src)) next.delete(src)
+      else next.add(src)
+      return next
+    })
+  }, [])
+
+  const clearSelection = useCallback(() => {
+    setSelectedImages(new Set())
+  }, [])
+
+  const handleDeleteConfirm = useCallback(async () => {
+    const images = Array.from(selectedImages).map(src => ({
+      dateStr: src.split('_')[0],
+      src,
+    }))
+
+    try {
+      const res = await fetch('/api/delete-images', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ images }),
+      })
+      const result = await res.json()
+
+      if (result.success) {
+        const deletedSet = new Set(result.deleted.map(d => d.src))
+
+        setData(prev => prev ? prev.filter(img => !deletedSet.has(img.src)) : prev)
+        setAllImages(prev => prev.filter(img => !deletedSet.has(img.src)))
+        setDetailDates(prev => {
+          const next = { ...prev }
+          result.deleted.forEach(({ dateStr }) => {
+            if (next[dateStr] > 0) next[dateStr]--
+          })
+          return next
+        })
+
+        if (zoomImage && deletedSet.has(zoomImage.src)) {
+          setZoomImage(null)
+        }
+
+        clearSelection()
+        setShowDeleteConfirm(false)
+        addToast(`Deleted ${result.deleted.length} image${result.deleted.length > 1 ? 's' : ''}`, 'dark')
+      } else {
+        addToast(`Failed to delete some images: ${result.failed?.map(f => f.error).join(', ')}`, 'dark')
+      }
+    } catch (err) {
+      addToast(`Delete request failed: ${err.message}`, 'dark')
+    }
+  }, [selectedImages, zoomImage, addToast, clearSelection])
 
   const goPlaySound = useCallback(() => {
     if (playSoundRef.current) {
@@ -315,6 +374,8 @@ export default function App() {
           onClose={() => setShowSearch(false)}
           setZoomImage={setZoomImage}
           addToast={addToast}
+          selectedImages={selectedImages}
+          toggleSelection={toggleSelection}
         />
       )}
 
@@ -359,6 +420,8 @@ export default function App() {
             data={data}
             setZoomImage={setZoomImage}
             addToast={addToast}
+            selectedImages={selectedImages}
+            toggleSelection={toggleSelection}
           />
         ) : (
           !isLoading && !isCorsError && !isNotFoundError && (
@@ -386,10 +449,22 @@ export default function App() {
           filterImages={zoomImage.filterImages || null}
           onClose={() => setZoomImage(null)}
           addToast={addToast}
+          selectedImages={selectedImages}
+          toggleSelection={toggleSelection}
         />
       )}
 
       <NotificationToast toasts={toasts} removeToast={removeToast} />
+
+      <DeleteBar count={selectedImages.size} onClick={() => setShowDeleteConfirm(true)} />
+
+      {showDeleteConfirm && (
+        <DeleteConfirmModal
+          selectedImages={selectedImages}
+          onConfirm={handleDeleteConfirm}
+          onCancel={() => setShowDeleteConfirm(false)}
+        />
+      )}
 
       <p className="p-5">
         <span className="mx-5">Release 2.0.0</span>

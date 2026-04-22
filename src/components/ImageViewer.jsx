@@ -5,7 +5,7 @@ import BatchGallery from './BatchGallery'
 import PageController from './PageController'
 import GalleryController from './GalleryController'
 
-export default function ImageViewer({ dateStr, data, setZoomImage, addToast }) {
+export default function ImageViewer({ dateStr, data, setZoomImage, addToast, selectedImages, toggleSelection }) {
   const [mode, setMode] = useState("images")
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPageSelects = [8, 16, 32, 64, 128]
@@ -144,6 +144,8 @@ export default function ImageViewer({ dateStr, data, setZoomImage, addToast }) {
             setZoomImage={setZoomImage}
             sortedData={sortedData}
             addToast={addToast}
+            selectedImages={selectedImages}
+            toggleSelection={toggleSelection}
           />
         ))}
         <GalleryController

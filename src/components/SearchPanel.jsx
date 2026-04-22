@@ -1,10 +1,10 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import MultiSelect from './MultiSelect'
 import { goSearch } from '../utils/searchUtils'
 import { downloadImage } from '../utils/imageUtils'
 import { decodeFooocusJSON } from '../utils/parseLog'
 
-export default function SearchPanel({ allImages, allModels, allStyles, workingDates, onClose, setZoomImage, addToast }) {
+export default function SearchPanel({ allImages, allModels, allStyles, workingDates, onClose, setZoomImage, addToast, selectedImages, toggleSelection }) {
   const [searchText, setSearchText] = useState('')
   const [selectedModels, setSelectedModels] = useState([])
   const [selectedStyles, setSelectedStyles] = useState([])
@@ -13,6 +13,10 @@ export default function SearchPanel({ allImages, allModels, allStyles, workingDa
   const [page, setPage] = useState(0)
   const [notFoundCount, setNotFoundCount] = useState(0)
   const perPage = 60
+
+  useEffect(() => {
+    setResults(prev => prev.filter(r => allImages.some(img => img.src === r.src)))
+  }, [allImages])
 
   const modelOptions = allModels.map(m => m.replace(".safetensors", ""))
   const styleOptions = allStyles
@@ -145,6 +149,8 @@ export default function SearchPanel({ allImages, allModels, allStyles, workingDa
                     filterImages={results}
                     onError={() => setNotFoundCount(prev => prev + 1)}
                     addToast={addToast}
+                    selectedImages={selectedImages}
+                    toggleSelection={toggleSelection}
                   />
                 )
               })}
@@ -180,10 +186,11 @@ export default function SearchPanel({ allImages, allModels, allStyles, workingDa
   )
 }
 
-function SearchResultCard({ data, index, maxIndex, setZoomImage, filterImages, onError, addToast }) {
+function SearchResultCard({ data, index, maxIndex, setZoomImage, filterImages, onError, addToast, selectedImages, toggleSelection }) {
   const [isHovered, setIsHovered] = useState(false)
   const [hasError, setHasError] = useState(false)
   const [dimensions, setDimensions] = useState(null)
+  const isSelected = selectedImages.has(data.src)
 
   const gcd = (a, b) => b ? gcd(b, a % b) : a
   const getAspect = (w, h) => {
@@ -192,7 +199,7 @@ function SearchResultCard({ data, index, maxIndex, setZoomImage, filterImages, o
     return `${w / g}/${h / g}`
   }
 
-  const src = `/file=outputs/${data.dt}/${data.src}`
+  const src = `./${data.dt}/${data.src}`
   const decoded = decodeFooocusJSON(JSON.stringify(data))
   const json = JSON.stringify(decoded.copy)
 
@@ -215,6 +222,7 @@ function SearchResultCard({ data, index, maxIndex, setZoomImage, filterImages, o
       className="col p-1 relative"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      style={{ border: isSelected ? '2px solid #dc2626' : '2px solid transparent', borderRadius: '4px' }}
     >
       <img
         src={src}
@@ -238,6 +246,20 @@ function SearchResultCard({ data, index, maxIndex, setZoomImage, filterImages, o
           >
             Metadatas: click to copy all
           </div>
+
+          <label
+            className="absolute flex items-center justify-center cursor-pointer"
+            style={{ top: '4px', right: '4px', width: '28px', height: '28px', background: 'rgba(0,0,0,0.7)', borderRadius: '3px' }}
+            title="Select for deletion"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <input
+              type="checkbox"
+              checked={isSelected}
+              onChange={() => toggleSelection(data.src)}
+              className="w-4 h-4 cursor-pointer"
+            />
+          </label>
           {dimensions && (
             <div
               className="absolute text-xs px-1 rounded"
