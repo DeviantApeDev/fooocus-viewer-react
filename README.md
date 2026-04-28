@@ -13,6 +13,15 @@ A Single Page Application built with Vite, React, and Tailwind CSS that serves a
 - **Notifications** - Sound and toast alerts for new images
 - **Download & Copy** - Download images or copy metadata to clipboard
 - **Single-file build** - Everything bundled into one HTML file for easy deployment
+- **Delete Images** - Select and permanently delete images from disk with automatic log cleanup (requires server)
+
+## Deleting Images
+
+> **Warning:** Deletion is permanent. Image files are removed from disk and their entries are removed from `log.html`. This cannot be undone.
+
+The delete feature requires the Express server, which means you need [Node.js installed](#nodejs-installation-guide). It will not work with the standalone `viewer.html` file opened directly in a browser.
+
+For cleaning up metadata of images already deleted outside the app, see the [Cleanup Script](#cleanup-script-nodejs-required) section.
 
 ## Installation
 Put the [dist/viewer.html](https://github.com/DeviantApeDev/fooocus-viewer-react/blob/main/dist/viewer.html) file in your Fooocus's output folder
