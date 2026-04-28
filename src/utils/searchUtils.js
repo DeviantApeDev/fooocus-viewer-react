@@ -34,9 +34,11 @@ export function goSearch(allImages, searchText, selectedModels, selectedStyles) 
     }
 
     if (styles.length > 0 && found) {
+      found = false
       for (let j = 0; j < styles.length; j++) {
-        if (!img.Styles.includes(styles[j])) {
-          found = false
+        if (img.Styles.includes(styles[j])) {
+          found = true
+          break
         }
       }
     }

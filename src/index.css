@@ -280,31 +280,8 @@ img.imageNotice {
   max-height: 320px;
 }
 
-/* Search form */
-form#formSearch {
-  border-radius: 5px;
-  border: #fde4fd 1px solid;
-  background-color: #ba00bd;
-}
-
-/* Search results box */
-div#resultBox {
-  background: #000;
-  border-radius: 5px;
-  border: 1px solid #f79cf8;
-}
-
 input, select {
   color: #000;
-}
-
-input#searchText {
-  display: flex;
-}
-
-/* Multi-select */
-multi-select {
-  background: #fff;
 }
 
 div.msw-dropdown {
