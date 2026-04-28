@@ -82,6 +82,11 @@ export default function App() {
     setSelectedImages(new Set())
   }, [])
 
+  const handleDeleteBatch = useCallback((imageSrcs) => {
+    setSelectedImages(new Set(imageSrcs))
+    setShowDeleteConfirm(true)
+  }, [])
+
   const handleDeleteConfirm = useCallback(async () => {
     const images = Array.from(selectedImages).map(src => ({
       dateStr: src.split('_')[0],
@@ -422,6 +427,7 @@ export default function App() {
             addToast={addToast}
             selectedImages={selectedImages}
             toggleSelection={toggleSelection}
+            onDeleteBatch={handleDeleteBatch}
           />
         ) : (
           !isLoading && !isCorsError && !isNotFoundError && (
