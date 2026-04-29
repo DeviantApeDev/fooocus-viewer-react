@@ -84,7 +84,6 @@ export default function App() {
 
   const handleDeleteBatch = useCallback((imageSrcs) => {
     setSelectedImages(new Set(imageSrcs))
-    setShowDeleteConfirm(true)
   }, [])
 
   const handleDeleteConfirm = useCallback(async () => {
