@@ -83,7 +83,15 @@ export default function App() {
   }, [])
 
   const handleDeleteBatch = useCallback((imageSrcs) => {
-    setSelectedImages(new Set(imageSrcs))
+    setSelectedImages(prev => {
+      const allSelected = imageSrcs.every(src => prev.has(src))
+      const next = new Set(prev)
+      imageSrcs.forEach(src => {
+        if (allSelected) next.delete(src)
+        else next.add(src)
+      })
+      return next
+    })
   }, [])
 
   const handleDeleteConfirm = useCallback(async () => {
