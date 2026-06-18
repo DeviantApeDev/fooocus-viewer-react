@@ -226,7 +226,6 @@ function SearchResultCard({ data, index, maxIndex, setZoomImage, filterImages, o
     >
       <img
         src={src}
-        loading="lazy"
         alt={data.src}
         className="responsive thumbnail cursor-zoom-in"
         style={{ width: '100%', height: 'auto' }}

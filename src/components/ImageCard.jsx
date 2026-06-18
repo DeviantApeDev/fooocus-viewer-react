@@ -49,7 +49,6 @@ export default function ImageCard({ data, index, maxIndex, setZoomImage, onError
       <img
         src={src}
         alt={data.src}
-        loading="lazy"
         className="img-load-detection max-w-screen max-h-screen object-contain cursor-zoom-in"
         style={{ width: '100%' }}
         onLoad={(e) => setDimensions({ width: e.target.naturalWidth, height: e.target.naturalHeight })}
