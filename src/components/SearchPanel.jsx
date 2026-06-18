@@ -12,6 +12,7 @@ export default function SearchPanel({ allImages, allModels, allStyles, workingDa
   const [hasSearched, setHasSearched] = useState(false)
   const [page, setPage] = useState(0)
   const [notFoundCount, setNotFoundCount] = useState(0)
+  const [wordMatch, setWordMatch] = useState(false)
   const perPage = 60
 
   useEffect(() => {
@@ -22,7 +23,7 @@ export default function SearchPanel({ allImages, allModels, allStyles, workingDa
   const styleOptions = allStyles
 
   const handleSearch = () => {
-    const { results: res } = goSearch(allImages, searchText, selectedModels, selectedStyles)
+    const { results: res } = goSearch(allImages, searchText, selectedModels, selectedStyles, wordMatch)
     setResults(res)
     setHasSearched(true)
     setPage(0)
@@ -52,6 +53,16 @@ export default function SearchPanel({ allImages, allModels, allStyles, workingDa
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
           />
+        </label>
+
+        <label className="flex items-center gap-2 mt-1 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={wordMatch}
+            onChange={(e) => setWordMatch(e.target.checked)}
+            className="w-4 h-4 cursor-pointer"
+          />
+          Whole word matching
         </label>
 
         <label className="block mt-1">

@@ -1,4 +1,4 @@
-export function goSearch(allImages, searchText, selectedModels, selectedStyles) {
+export function goSearch(allImages, searchText, selectedModels, selectedStyles, wordMatch = false) {
   const searchResults = []
   const txt = searchText.trim()
   const models = selectedModels
@@ -9,18 +9,21 @@ export function goSearch(allImages, searchText, selectedModels, selectedStyles) 
   }
 
   const reg = new RegExp("[ ,;]+", "g")
+  const tokens = txt !== "" ? txt.split(reg).map(m => m.toLowerCase().trim()).filter(Boolean) : []
+  const wordRegexes = wordMatch ? tokens.map(t => new RegExp(`\\b${t}\\b`)) : []
 
   for (let i = 0; i < allImages.length; i++) {
     let found = false
     const img = allImages[i]
 
-    if (txt !== "") {
-      const mots = txt.split(reg)
+    if (tokens.length > 0) {
+      const promptLower = img.Prompt.toLowerCase()
       found = true
-      for (let j = 0; j < mots.length; j++) {
-        if (img.Prompt.toLowerCase().indexOf(mots[j].toLowerCase().trim()) >= 0) {
-          found = true
-        } else {
+      for (let j = 0; j < tokens.length; j++) {
+        const match = wordMatch
+          ? wordRegexes[j].test(promptLower)
+          : promptLower.indexOf(tokens[j]) >= 0
+        if (!match) {
           found = false
           break
         }
