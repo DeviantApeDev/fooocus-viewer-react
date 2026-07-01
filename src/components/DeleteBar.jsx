@@ -1,6 +1,6 @@
 import React from 'react'
 
-export default function DeleteBar({ count, onClick, onClearSelection }) {
+export default function DeleteBar({ count, onClick, onFavorite, onClearSelection }) {
   if (count === 0) return null
 
   return (
@@ -15,6 +15,18 @@ export default function DeleteBar({ count, onClick, onClearSelection }) {
         onClick={onClearSelection}
       >
         Deselect All
+      </button>
+      <button
+        className="px-5 py-3 rounded-full font-bold shadow-lg hover:opacity-90 transition-opacity"
+        style={{
+          background: '#f59e0b',
+          color: '#000',
+          fontSize: '16px',
+          boxShadow: '0 4px 14px rgba(245, 158, 11, 0.4)',
+        }}
+        onClick={onFavorite}
+      >
+        {'\u2605'} Favorite {count} image{count > 1 ? 's' : ''}
       </button>
       <button
         className="px-5 py-3 rounded-full font-bold text-white shadow-lg hover:opacity-90 transition-opacity"

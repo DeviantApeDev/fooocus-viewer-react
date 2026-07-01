@@ -2,9 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 
 export default function useFavorites(addToast) {
   const [favoriteImages, setFavoriteImages] = useState(new Set())
-  const [showFavorites, setShowFavorites] = useState(() => {
-    return localStorage.getItem('showFavorites') === 'true'
-  })
+  const [showFavorites, setShowFavorites] = useState(false)
 
   useEffect(() => {
     fetch('/api/favorites')
@@ -30,11 +28,11 @@ export default function useFavorites(addToast) {
       })
   }, [])
 
-  const toggleFavorite = useCallback((src) => {
+  const toggleFavorite = useCallback((src, dt) => {
     fetch('/api/favorites/toggle', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ src }),
+      body: JSON.stringify({ src, dt }),
     })
       .then(res => {
         if (!res.ok) throw new Error(res.status)
@@ -52,16 +50,12 @@ export default function useFavorites(addToast) {
     return favoriteImages.has(src)
   }, [favoriteImages])
 
-  const handleSetShowFavorites = useCallback((val) => {
-    setShowFavorites(val)
-    localStorage.setItem('showFavorites', val)
-  }, [])
-
   return {
     favoriteImages,
+    setFavoriteImages,
     toggleFavorite,
     isFavorite,
     showFavorites,
-    setShowFavorites: handleSetShowFavorites,
+    setShowFavorites,
   }
 }

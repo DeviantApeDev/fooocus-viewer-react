@@ -9,7 +9,9 @@ export default function ImageCard({ data, index, maxIndex, setZoomImage, onError
   const favorited = isFavorite ? isFavorite(data.src) : false
 
   const dateStr = data.src.split("_")[0]
-  const src = `./${dateStr}/${data.src}`
+  const src = isFavorite && isFavorite(data.src)
+    ? `./favorites/${data.src}`
+    : `./${dateStr}/${data.src}`
   const decoded = decodeFooocusJSON(JSON.stringify(data))
   const json = JSON.stringify(decoded.copy)
 
@@ -61,7 +63,7 @@ export default function ImageCard({ data, index, maxIndex, setZoomImage, onError
           textShadow: '2px 2px 2px rgba(0,0,0,0.25)',
         }}
         title={favorited ? 'Remove from favorites' : 'Add to favorites'}
-        onClick={(e) => { e.stopPropagation(); if (toggleFavorite) toggleFavorite(data.src) }}
+        onClick={(e) => { e.stopPropagation(); if (toggleFavorite) toggleFavorite(data.src, data.dt) }}
       >
         {favorited ? '\u2605' : '\u2606'}
       </button>

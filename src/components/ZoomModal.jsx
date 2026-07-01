@@ -14,7 +14,9 @@ export default function ZoomModal({ image, allImages, filterImages, onClose, add
   const isSelected = selectedImages.has(currentImage.src)
   const favorited = isFavorite ? isFavorite(currentImage.src) : false
   const imgDateStr = currentImage.src.split("_")[0]
-  const src = `./${imgDateStr}/${currentImage.src}`
+  const src = isFavorite && isFavorite(currentImage.src)
+    ? `./favorites/${currentImage.src}`
+    : `./${imgDateStr}/${currentImage.src}`
   const json = JSON.stringify(currentImage)
   const decoded = decodeFooocusJSON(json)
 
@@ -142,7 +144,7 @@ export default function ZoomModal({ image, allImages, filterImages, onClose, add
           <button
             className="text-2xl hover:opacity-70"
             style={{ color: favorited ? '#f59e0b' : '#fff' }}
-            onClick={(e) => { e.stopPropagation(); if (toggleFavorite) toggleFavorite(currentImage.src) }}
+            onClick={(e) => { e.stopPropagation(); if (toggleFavorite) toggleFavorite(currentImage.src, currentImage.dt) }}
             title={favorited ? 'Remove from favorites' : 'Add to favorites'}
           >
             {favorited ? '\u2605' : '\u2606'}

@@ -54,7 +54,7 @@ export default function App() {
     }, 4000)
   }, [])
 
-  const { favoriteImages, toggleFavorite, isFavorite, showFavorites, setShowFavorites } = useFavorites(addToast)
+  const { favoriteImages, setFavoriteImages, toggleFavorite, isFavorite, showFavorites, setShowFavorites } = useFavorites(addToast)
   const lastLogSizeRef = useRef(null)
   const playSoundRef = useRef(true)
   const nbTodayImagesRef = useRef(0)
@@ -134,6 +134,11 @@ export default function App() {
 
         setData(prev => prev ? prev.filter(img => !deletedSet.has(img.src)) : prev)
         setAllImages(prev => prev.filter(img => !deletedSet.has(img.src)))
+        setFavoriteImages(prev => {
+          const next = new Set(prev)
+          result.deleted.forEach(({ src }) => next.delete(src))
+          return next
+        })
         setDetailDates(prev => {
           const next = { ...prev }
           result.deleted.forEach(({ dateStr }) => {
@@ -155,7 +160,33 @@ export default function App() {
     } catch (err) {
       addToast('Deleting images requires the server to be running', 'dark')
     }
-  }, [selectedImages, zoomImage, addToast, clearSelection])
+  }, [selectedImages, zoomImage, addToast, clearSelection, setFavoriteImages])
+
+  const handleBatchFavorite = useCallback(async () => {
+    const images = Array.from(selectedImages).map(src => ({
+      src,
+      dt: src.split('_')[0],
+    }))
+
+    try {
+      const res = await fetch('/api/favorites/batch-toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ images }),
+      })
+      const result = await res.json()
+
+      if (result.favorites) {
+        setFavoriteImages(new Set(result.favorites))
+        clearSelection()
+        addToast(`Favorited ${result.added} image${result.added !== 1 ? 's' : ''}`, 'dark')
+      } else {
+        addToast('Batch favorite requires the server to be running', 'dark')
+      }
+    } catch (err) {
+      addToast('Batch favorite requires the server to be running', 'dark')
+    }
+  }, [selectedImages, addToast, clearSelection, setFavoriteImages])
 
   const goPlaySound = useCallback(() => {
     if (playSoundRef.current) {
@@ -400,6 +431,29 @@ export default function App() {
     )
 
     Promise.all(requests).then(() => {
+      return fetch('./favorites/index.json')
+        .then(res => res.ok ? res.json() : {})
+        .catch(() => ({}))
+    }).then(favIndex => {
+      for (const [src, entry] of Object.entries(favIndex)) {
+        if (!entry.metadata) continue
+        const wrapped = `<!DOCTYPE html><html><body>${entry.metadata}</body></html>`
+        const { data } = parseLog(wrapped)
+        if (data.length > 0) {
+          const img = { ...data[0], dt: entry.dateStr }
+          if (img.Prompt) {
+            imgs.push(img)
+            modelsSet.add(img["Base Model"])
+            img.styles = []
+            if (img.Styles !== "[]") {
+              const reg = new RegExp("(')", "g")
+              img.styles = img.Styles.replace("[", "").replace(reg, "").replace("]", "").split(", ")
+            }
+            img.styles.forEach(s => { if (s) stylesSet.add(s) })
+          }
+        }
+      }
+
       setPromiseAll(true)
       addToast("Calendar and Search mode are now active.")
       wd.sort()
@@ -543,7 +597,7 @@ export default function App() {
 
       <NotificationToast toasts={toasts} removeToast={removeToast} />
 
-      <DeleteBar count={selectedImages.size} onClick={() => setShowDeleteConfirm(true)} onClearSelection={clearSelection} />
+      <DeleteBar count={selectedImages.size} onClick={() => setShowDeleteConfirm(true)} onFavorite={handleBatchFavorite} onClearSelection={clearSelection} />
 
       {showDeleteConfirm && (
         <DeleteConfirmModal

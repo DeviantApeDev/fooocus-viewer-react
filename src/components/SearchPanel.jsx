@@ -299,7 +299,9 @@ function SearchResultCard({ data, index, maxIndex, setZoomImage, filterImages, o
     return `${w / g}/${h / g}`
   }
 
-  const src = `./${data.dt}/${data.src}`
+  const src = isFavorite && isFavorite(data.src)
+    ? `./favorites/${data.src}`
+    : `./${data.dt}/${data.src}`
   const decoded = decodeFooocusJSON(JSON.stringify(data))
   const json = JSON.stringify(decoded.copy)
 
@@ -339,7 +341,7 @@ function SearchResultCard({ data, index, maxIndex, setZoomImage, filterImages, o
           textShadow: '2px 2px 2px rgba(0,0,0,0.25)',
         }}
         title={favorited ? 'Remove from favorites' : 'Add to favorites'}
-        onClick={(e) => { e.stopPropagation(); if (toggleFavorite) toggleFavorite(data.src) }}
+        onClick={(e) => { e.stopPropagation(); if (toggleFavorite) toggleFavorite(data.src, data.dt) }}
       >
         {favorited ? '\u2605' : '\u2606'}
       </button>
