@@ -1,7 +1,7 @@
 import React from 'react'
 
 export default function PageController({
-  mode, currentPage, setCurrentPage, numPages,
+  currentPage, setCurrentPage, numPages,
   numImages, firstImageInPage, lastImageInPage, scrollToTop
 }) {
   return (
@@ -14,7 +14,7 @@ export default function PageController({
         &#x25C0;&#xFE0F;
       </button>
       <span className="p-2">
-        {mode === "batches" ? "Batch" : "P."} {currentPage} / {numPages} ({firstImageInPage} - {lastImageInPage} / {numImages} Images)
+        P. {currentPage} / {numPages} ({firstImageInPage} - {lastImageInPage} / {numImages} Images)
       </span>
       <button
         className="bg-transparent hover:bg-blue-500 text-white font-semibold hover:text-white py-2 px-4 border border-white hover:border-transparent rounded disabled:bg-gray-500 disabled:border-gray-800 disabled:text-white"
