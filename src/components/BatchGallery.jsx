@@ -75,22 +75,6 @@ export default function BatchGallery({ batch, showDiff, showDetail, numColumns, 
                       </>
                     ) : Array.isArray(value) ? (
                       <></>
-                    ) : key === "Styles" ? (
-                      <div className="flex">
-                        {(value || "").replace(/'/g, "").replace("[", "").replace("]", "").split(", ").map((style, i) => (
-                          style.trim() !== "" && (
-                            <div key={i} className="flex-initial text-center mx-1 styleContainer">
-                              <img
-                                src={`/file=sdxl_styles/samples/${style.toLowerCase().replace(/ /g, "_")}.jpg`}
-                                className="styleImage"
-                                alt={style}
-                                onError={(e) => { e.target.style.display = 'none' }}
-                              />
-                              <span className="styleTitle">{style}</span>
-                            </div>
-                          )
-                        ))}
-                      </div>
                     ) : (
                       value
                     )}

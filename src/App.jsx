@@ -61,8 +61,8 @@ export default function App() {
   const isToday = date.toDateString() === new Date().toDateString()
   const dateStr = getDateStr(date)
 
-  const filteredData = showFavorites && data
-    ? data.filter(img => favoriteImages.has(img.src))
+  const filteredData = showFavorites && promiseAll
+    ? allImages.filter(img => favoriteImages.has(img.src))
     : data
 
   const filteredAllImages = showFavorites
@@ -255,7 +255,7 @@ export default function App() {
       .then((text) => parseLog(text))
       .then((parsed) => {
         parsed.data.sort((a, b) => b.src.localeCompare(a.src))
-        setData(parsed.data)
+        setData(parsed.data.map(img => ({ ...img, dt: dateStr })))
         setIsNotFoundError(false)
         setIsCorsError(false)
         setIsLoading(false)
@@ -509,7 +509,7 @@ export default function App() {
           !isLoading && !isCorsError && !isNotFoundError && (
             <div>
               <p className="text-center m-16">
-                {showFavorites ? 'No favorite images in this folder' : 'No data in this folder'}
+                {showFavorites ? 'No favorite images found' : 'No data in this folder'}
               </p>
               {promiseAll && workingDates.length > 0 && (
                 <p className="text-center m-2">
