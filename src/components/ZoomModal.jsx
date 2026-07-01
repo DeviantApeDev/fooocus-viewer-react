@@ -3,7 +3,7 @@ import { formatFilesize, downloadImage } from '../utils/imageUtils'
 import { decodeFooocusJSON } from '../utils/parseLog'
 import { getParam, saveParam } from '../hooks/useLocalStorage'
 
-export default function ZoomModal({ image, allImages, filterImages, onClose, addToast, selectedImages, toggleSelection }) {
+export default function ZoomModal({ image, allImages, filterImages, onClose, addToast, selectedImages, toggleSelection, isFavorite, toggleFavorite }) {
   const imageList = filterImages || allImages
   const [currentIndex, setCurrentIndex] = useState(image.index || 0)
   const [showMeta, setShowMeta] = useState(getParam("displayMetaBlock") !== "false")
@@ -12,6 +12,7 @@ export default function ZoomModal({ image, allImages, filterImages, onClose, add
 
   const currentImage = imageList[currentIndex] || image
   const isSelected = selectedImages.has(currentImage.src)
+  const favorited = isFavorite ? isFavorite(currentImage.src) : false
   const imgDateStr = currentImage.src.split("_")[0]
   const src = `./${imgDateStr}/${currentImage.src}`
   const json = JSON.stringify(currentImage)
@@ -137,6 +138,14 @@ export default function ZoomModal({ image, allImages, filterImages, onClose, add
             title={isSelected ? 'Unmark for deletion' : 'Mark for deletion'}
           >
             &#x1F5D1;
+          </button>
+          <button
+            className="text-2xl hover:opacity-70"
+            style={{ color: favorited ? '#f59e0b' : '#fff' }}
+            onClick={(e) => { e.stopPropagation(); if (toggleFavorite) toggleFavorite(currentImage.src) }}
+            title={favorited ? 'Remove from favorites' : 'Add to favorites'}
+          >
+            {favorited ? '\u2605' : '\u2606'}
           </button>
           <span className="text-white text-lg font-bold" style={{ textShadow: '2px 2px 2px #000' }}>
             {currentImage.src}

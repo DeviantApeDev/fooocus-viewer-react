@@ -3,7 +3,8 @@ import React from 'react'
 export default function Header({
   dateStr, goYesterday, goTomorrow, handleUpdateDate,
   playSound, setPlaySound, autoReload, setAutoReload,
-  isToday, isLoading, showSearch, showCalendar, showConfigPanel, promiseAll, onDeleteDay
+  isToday, isLoading, showSearch, showCalendar, showConfigPanel, promiseAll, onDeleteDay,
+  showFavorites, setShowFavorites
 }) {
   return (
     <div className="px-1 py-0 flex flex-wrap items-center justify-between">
@@ -50,6 +51,15 @@ export default function Header({
         >
           &#128197;
         </div>
+
+        <button
+          className="px-2 mx-2 text-xl"
+          title={showFavorites ? 'Show all images' : 'Show only favorites'}
+          onClick={() => setShowFavorites(!showFavorites)}
+          style={{ color: showFavorites ? '#f59e0b' : undefined }}
+        >
+          {showFavorites ? '\u2605' : '\u2606'}
+        </button>
 
         <label>
           Sound on new Image:

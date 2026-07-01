@@ -1,8 +1,8 @@
+import 'dotenv/config'
 import { copyFileSync, existsSync, renameSync } from 'fs'
 import { join } from 'path'
 
-// Change this to your Fooocus's outputs directory
-const fooocusOutputDir = 'D:\\AI\\StabilityMatrix-win-x64\\Data\\Packages\\Fooocus\\outputs'
+const fooocusOutputDir = process.env.FOOOCUS_OUTPUTS_DIR || process.cwd()
 const distDir = join(import.meta.dirname, 'dist')
 
 renameSync(join(distDir, 'index.html'), join(distDir, 'viewer.html'))

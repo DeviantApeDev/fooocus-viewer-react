@@ -5,7 +5,7 @@ import BatchGallery from './BatchGallery'
 import PageController from './PageController'
 import GalleryController from './GalleryController'
 
-export default function ImageViewer({ dateStr, data, setZoomImage, addToast, selectedImages, toggleSelection, onDeleteBatch }) {
+export default function ImageViewer({ dateStr, data, setZoomImage, addToast, selectedImages, toggleSelection, onDeleteBatch, isFavorite, toggleFavorite }) {
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPageSelects = [8, 16, 32, 64, 128]
 
@@ -116,6 +116,8 @@ export default function ImageViewer({ dateStr, data, setZoomImage, addToast, sel
             selectedImages={selectedImages}
             toggleSelection={toggleSelection}
             onDeleteBatch={onDeleteBatch}
+            isFavorite={isFavorite}
+            toggleFavorite={toggleFavorite}
           />
         ))}
         <GalleryController

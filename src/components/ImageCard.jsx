@@ -1,12 +1,12 @@
 import React, { useState } from 'react'
-import { downloadImage } from '../utils/imageUtils'
 import { decodeFooocusJSON } from '../utils/parseLog'
 
-export default function ImageCard({ data, index, maxIndex, setZoomImage, onError, addToast, selectedImages, toggleSelection }) {
+export default function ImageCard({ data, index, maxIndex, setZoomImage, onError, addToast, selectedImages, toggleSelection, isFavorite, toggleFavorite }) {
   const [isHovered, setIsHovered] = useState(false)
   const [dimensions, setDimensions] = useState(null)
   const [hasError, setHasError] = useState(false)
   const isSelected = selectedImages.has(data.src)
+  const favorited = isFavorite ? isFavorite(data.src) : false
 
   const dateStr = data.src.split("_")[0]
   const src = `./${dateStr}/${data.src}`
@@ -32,11 +32,6 @@ export default function ImageCard({ data, index, maxIndex, setZoomImage, onError
       .catch(() => addToast('Metadata copied to clipboard'))
   }
 
-  const handleDownload = (e) => {
-    e.stopPropagation()
-    downloadImage(src, data.src).catch(console.error)
-  }
-
   if (hasError) return null
 
   return (
@@ -55,6 +50,21 @@ export default function ImageCard({ data, index, maxIndex, setZoomImage, onError
         onError={handleError}
         onClick={() => setZoomImage({ ...data, index, max: maxIndex, src, json, dimensions })}
       />
+      <button
+        className="absolute flex items-center justify-center cursor-pointer"
+        style={{
+          bottom: '24px', right: '0',
+          width: '28px', height: '28px',
+          background: favorited ? 'rgba(245,158,11,0.85)' : 'rgba(0,0,0,0.5)',
+          borderRadius: '4px',
+          fontSize: '16px', color: favorited ? '#000' : '#fff',
+          textShadow: '2px 2px 2px rgba(0,0,0,0.25)',
+        }}
+        title={favorited ? 'Remove from favorites' : 'Add to favorites'}
+        onClick={(e) => { e.stopPropagation(); if (toggleFavorite) toggleFavorite(data.src) }}
+      >
+        {favorited ? '\u2605' : '\u2606'}
+      </button>
       <p className="text-gray-500 text-sm hideOverflowSrc">{data.src}</p>
 
       {isHovered && (
@@ -93,15 +103,6 @@ export default function ImageCard({ data, index, maxIndex, setZoomImage, onError
               {dimensions.width}&times;{dimensions.height} ({getAspect(dimensions.width, dimensions.height)})
             </div>
           )}
-
-          <button
-            className="absolute text-2xl"
-            style={{ bottom: '24px', right: '0', textShadow: '2px 2px 2px rgba(0,0,0,0.25)' }}
-            onClick={handleDownload}
-            title="Click to download"
-          >
-            &#x2B07;
-          </button>
         </>
       )}
     </div>

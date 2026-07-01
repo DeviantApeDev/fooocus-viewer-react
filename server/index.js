@@ -10,8 +10,57 @@ const app = express()
 const PORT = process.env.PORT || 3001
 
 const OUTPUTS_DIR = process.env.FOOOCUS_OUTPUTS_DIR || process.cwd()
+const FAVORITES_FILE = join(OUTPUTS_DIR, 'favorites.json')
 
 app.use(express.json({ limit: '1mb' }))
+
+async function readFavorites() {
+  try {
+    const content = await readFile(FAVORITES_FILE, 'utf-8')
+    return JSON.parse(content)
+  } catch {
+    return []
+  }
+}
+
+async function writeFavorites(favorites) {
+  await writeFile(FAVORITES_FILE, JSON.stringify(favorites, null, 2), 'utf-8')
+}
+
+app.get('/api/favorites', async (_req, res) => {
+  try {
+    const favorites = await readFavorites()
+    res.json({ favorites })
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message })
+  }
+})
+
+app.post('/api/favorites/toggle', async (req, res) => {
+  const { src } = req.body
+  if (!src || typeof src !== 'string') {
+    return res.status(400).json({ success: false, error: 'src string required' })
+  }
+
+  try {
+    const favorites = await readFavorites()
+    const index = favorites.indexOf(src)
+    let added
+
+    if (index === -1) {
+      favorites.push(src)
+      added = true
+    } else {
+      favorites.splice(index, 1)
+      added = false
+    }
+
+    await writeFavorites(favorites)
+    res.json({ favorites, added })
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message })
+  }
+})
 
 const DIV_OPEN_REGEX = /<div\s+[^>]*\bid=["']([^"']*_(?:png|jpg|jpeg|webp))["'][^>]*>/gi
 

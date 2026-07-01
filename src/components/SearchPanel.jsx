@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import MultiSelect from './MultiSelect'
 import { goSearch } from '../utils/searchUtils'
-import { downloadImage } from '../utils/imageUtils'
 import { decodeFooocusJSON } from '../utils/parseLog'
 
-export default function SearchPanel({ allImages, allModels, allStyles, workingDates, onClose, setZoomImage, addToast, selectedImages, toggleSelection, setSelection }) {
+export default function SearchPanel({ allImages, allModels, allStyles, workingDates, onClose, setZoomImage, addToast, selectedImages, toggleSelection, setSelection, isFavorite, toggleFavorite }) {
   const [searchText, setSearchText] = useState('')
   const [selectedModels, setSelectedModels] = useState([])
   const [selectedStyles, setSelectedStyles] = useState([])
@@ -234,6 +233,8 @@ export default function SearchPanel({ allImages, allModels, allStyles, workingDa
                     addToast={addToast}
                     selectedImages={selectedImages}
                     toggleSelection={toggleSelection}
+                    isFavorite={isFavorite}
+                    toggleFavorite={toggleFavorite}
                   />
                 )
               })}
@@ -284,11 +285,12 @@ export default function SearchPanel({ allImages, allModels, allStyles, workingDa
   )
 }
 
-function SearchResultCard({ data, index, maxIndex, setZoomImage, filterImages, onError, addToast, selectedImages, toggleSelection }) {
+function SearchResultCard({ data, index, maxIndex, setZoomImage, filterImages, onError, addToast, selectedImages, toggleSelection, isFavorite, toggleFavorite }) {
   const [isHovered, setIsHovered] = useState(false)
   const [hasError, setHasError] = useState(false)
   const [dimensions, setDimensions] = useState(null)
   const isSelected = selectedImages.has(data.src)
+  const favorited = isFavorite ? isFavorite(data.src) : false
 
   const gcd = (a, b) => b ? gcd(b, a % b) : a
   const getAspect = (w, h) => {
@@ -310,11 +312,6 @@ function SearchResultCard({ data, index, maxIndex, setZoomImage, filterImages, o
       .catch(() => addToast('Metadata copied to clipboard'))
   }
 
-  const handleDownload = (e) => {
-    e.stopPropagation()
-    downloadImage(src, data.src).catch(console.error)
-  }
-
   return (
     <div
       className="col p-1 relative"
@@ -331,6 +328,21 @@ function SearchResultCard({ data, index, maxIndex, setZoomImage, filterImages, o
         onError={() => { setHasError(true); onError() }}
         onClick={() => setZoomImage({ ...data, index, max: maxIndex, src, json, filterImages })}
       />
+      <button
+        className="absolute flex items-center justify-center cursor-pointer"
+        style={{
+          bottom: '24px', right: '0',
+          width: '28px', height: '28px',
+          background: favorited ? 'rgba(245,158,11,0.85)' : 'rgba(0,0,0,0.5)',
+          borderRadius: '4px',
+          fontSize: '16px', color: favorited ? '#000' : '#fff',
+          textShadow: '2px 2px 2px rgba(0,0,0,0.25)',
+        }}
+        title={favorited ? 'Remove from favorites' : 'Add to favorites'}
+        onClick={(e) => { e.stopPropagation(); if (toggleFavorite) toggleFavorite(data.src) }}
+      >
+        {favorited ? '\u2605' : '\u2606'}
+      </button>
       <div className="text-xs overflow-hidden whitespace-nowrap text-ellipsis">{data.src}</div>
 
       {isHovered && !hasError && (
@@ -368,14 +380,6 @@ function SearchResultCard({ data, index, maxIndex, setZoomImage, filterImages, o
               {dimensions.width}&times;{dimensions.height} ({getAspect(dimensions.width, dimensions.height)})
             </div>
           )}
-          <button
-            className="absolute text-2xl"
-            style={{ bottom: '24px', right: '0', textShadow: '2px 2px 2px rgba(0,0,0,0.25)' }}
-            onClick={handleDownload}
-            title="Click to download"
-          >
-            &#x2B07;
-          </button>
         </>
       )}
     </div>

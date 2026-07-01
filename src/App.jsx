@@ -3,6 +3,7 @@ import { getDateStr } from './utils/imageUtils'
 import { parseLog } from './utils/parseLog'
 import { playNotificationSound } from './utils/soundUtils'
 import { saveParam } from './hooks/useLocalStorage'
+import useFavorites from './hooks/useFavorites'
 import Header from './components/Header'
 import ImageViewer from './components/ImageViewer'
 import SearchPanel from './components/SearchPanel'
@@ -44,6 +45,7 @@ export default function App() {
   const [selectedImages, setSelectedImages] = useState(new Set())
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showDayDeleteConfirm, setShowDayDeleteConfirm] = useState(false)
+  const { favoriteImages, toggleFavorite, isFavorite, showFavorites, setShowFavorites } = useFavorites()
   const lastLogSizeRef = useRef(null)
   const playSoundRef = useRef(true)
   const nbTodayImagesRef = useRef(0)
@@ -58,6 +60,14 @@ export default function App() {
 
   const isToday = date.toDateString() === new Date().toDateString()
   const dateStr = getDateStr(date)
+
+  const filteredData = showFavorites && data
+    ? data.filter(img => favoriteImages.has(img.src))
+    : data
+
+  const filteredAllImages = showFavorites
+    ? allImages.filter(img => favoriteImages.has(img.src))
+    : allImages
 
   const addToast = useCallback((content, theme = 'dark') => {
     const id = Date.now() + Math.random()
@@ -425,13 +435,15 @@ export default function App() {
         showConfigPanel={() => setShowConfig(prev => !prev)}
         promiseAll={promiseAll}
         onDeleteDay={() => setShowDayDeleteConfirm(true)}
+        showFavorites={showFavorites}
+        setShowFavorites={setShowFavorites}
       />
 
       {showConfig && <ConfigPanel onClose={() => setShowConfig(false)} />}
 
       {showSearch && (
         <SearchPanel
-          allImages={allImages}
+          allImages={filteredAllImages}
           allModels={allModels}
           allStyles={allStyles}
           workingDates={workingDates}
@@ -441,6 +453,8 @@ export default function App() {
           selectedImages={selectedImages}
           toggleSelection={toggleSelection}
           setSelection={setSelection}
+          isFavorite={isFavorite}
+          toggleFavorite={toggleFavorite}
         />
       )}
 
@@ -479,20 +493,24 @@ export default function App() {
       )}
 
       {!showSearch && (
-        data && data.length > 0 ? (
+        filteredData && filteredData.length > 0 ? (
           <ImageViewer
             dateStr={dateStr}
-            data={data}
+            data={filteredData}
             setZoomImage={setZoomImage}
             addToast={addToast}
             selectedImages={selectedImages}
             toggleSelection={toggleSelection}
             onDeleteBatch={handleDeleteBatch}
+            isFavorite={isFavorite}
+            toggleFavorite={toggleFavorite}
           />
         ) : (
           !isLoading && !isCorsError && !isNotFoundError && (
             <div>
-              <p className="text-center m-16">No data in this folder</p>
+              <p className="text-center m-16">
+                {showFavorites ? 'No favorite images in this folder' : 'No data in this folder'}
+              </p>
               {promiseAll && workingDates.length > 0 && (
                 <p className="text-center m-2">
                   <button
@@ -511,12 +529,14 @@ export default function App() {
       {zoomImage && (
         <ZoomModal
           image={zoomImage}
-          allImages={showSearch ? allImages : data}
+          allImages={showSearch ? filteredAllImages : filteredData}
           filterImages={zoomImage.filterImages || null}
           onClose={() => setZoomImage(null)}
           addToast={addToast}
           selectedImages={selectedImages}
           toggleSelection={toggleSelection}
+          isFavorite={isFavorite}
+          toggleFavorite={toggleFavorite}
         />
       )}
 
