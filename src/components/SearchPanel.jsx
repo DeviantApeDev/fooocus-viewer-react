@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import MultiSelect from './MultiSelect'
 import { goSearch } from '../utils/searchUtils'
 import { downloadImage } from '../utils/imageUtils'
 import { decodeFooocusJSON } from '../utils/parseLog'
 
-export default function SearchPanel({ allImages, allModels, allStyles, workingDates, onClose, setZoomImage, addToast, selectedImages, toggleSelection }) {
+export default function SearchPanel({ allImages, allModels, allStyles, workingDates, onClose, setZoomImage, addToast, selectedImages, toggleSelection, setSelection }) {
   const [searchText, setSearchText] = useState('')
   const [selectedModels, setSelectedModels] = useState([])
   const [selectedStyles, setSelectedStyles] = useState([])
@@ -15,9 +15,76 @@ export default function SearchPanel({ allImages, allModels, allStyles, workingDa
   const [wordMatch, setWordMatch] = useState(false)
   const perPage = 60
 
+  const gridRef = useRef(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragRect, setDragRect] = useState(null)
+  const dragModeRef = useRef(true)
+  const dragStartRef = useRef(null)
+
   useEffect(() => {
     setResults(prev => prev.filter(r => allImages.some(img => img.src === r.src)))
   }, [allImages])
+
+  const getIntersectedSrcs = useCallback((rect) => {
+    if (!gridRef.current) return []
+    const gridBounds = gridRef.current.getBoundingClientRect()
+    const imgs = gridRef.current.querySelectorAll('img')
+    const matched = []
+    imgs.forEach(img => {
+      const card = img.closest('.col')
+      if (!card) return
+      const b = card.getBoundingClientRect()
+      const overlaps = rect.x1 < b.right && rect.x2 > b.left && rect.y1 < b.bottom && rect.y2 > b.top
+      if (overlaps) matched.push(img.alt)
+    })
+    return matched
+  }, [])
+
+  const handleMouseDown = useCallback((e) => {
+    if (e.button !== 0) return
+    const tag = e.target.tagName
+    if (tag === 'INPUT' || tag === 'BUTTON' || tag === 'LABEL' || tag === 'SELECT') return
+    if (!gridRef.current || !gridRef.current.contains(e.target)) return
+    e.preventDefault()
+    const bounds = gridRef.current.getBoundingClientRect()
+    const x = e.clientX - bounds.left
+    const y = e.clientY - bounds.top
+    dragStartRef.current = { x, y }
+    dragModeRef.current = e.ctrlKey || e.metaKey ? !selectedImages.has(e.target.alt || '') : true
+    setIsDragging(true)
+    setDragRect({ x1: x, y1: y, x2: x, y2: y })
+  }, [selectedImages])
+
+  const handleMouseMove = useCallback((e) => {
+    if (!isDragging || !dragStartRef.current || !gridRef.current) return
+    const bounds = gridRef.current.getBoundingClientRect()
+    const x = e.clientX - bounds.left
+    const y = e.clientY - bounds.top
+    const start = dragStartRef.current
+    const rect = { x1: Math.min(start.x, x), y1: Math.min(start.y, y), x2: Math.max(start.x, x), y2: Math.max(start.y, y) }
+    setDragRect(rect)
+    const matched = getIntersectedSrcs(rect)
+    setSelection(matched, dragModeRef.current)
+  }, [isDragging, getIntersectedSrcs, setSelection])
+
+  const handleMouseUp = useCallback(() => {
+    if (!isDragging) return
+    setIsDragging(false)
+    setDragRect(null)
+    dragStartRef.current = null
+  }, [isDragging])
+
+  useEffect(() => {
+    if (!isDragging) return
+    const onMove = (e) => handleMouseMove(e)
+    const onUp = () => handleMouseUp()
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+    return () => {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+    }
+  }, [isDragging, handleMouseMove, handleMouseUp])
 
   const modelOptions = allModels.map(m => m.replace(".safetensors", ""))
   const styleOptions = allStyles
@@ -148,7 +215,12 @@ export default function SearchPanel({ allImages, allModels, allStyles, workingDa
               </div>
             )}
 
-            <div className="grid gap-1 p-1" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
+            <div
+              ref={gridRef}
+              className="grid gap-1 p-1"
+              style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', position: 'relative', userSelect: isDragging ? 'none' : undefined, cursor: isDragging ? 'crosshair' : undefined }}
+              onMouseDown={handleMouseDown}
+            >
               {pageResults.map((data, i) => {
                 return (
                   <SearchResultCard
@@ -165,6 +237,21 @@ export default function SearchPanel({ allImages, allModels, allStyles, workingDa
                   />
                 )
               })}
+              {isDragging && dragRect && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: dragRect.x1,
+                    top: dragRect.y1,
+                    width: dragRect.x2 - dragRect.x1,
+                    height: dragRect.y2 - dragRect.y1,
+                    background: 'rgba(59,130,246,0.3)',
+                    border: '1px solid rgba(59,130,246,0.8)',
+                    pointerEvents: 'none',
+                    zIndex: 10,
+                  }}
+                />
+              )}
             </div>
 
             {results.length > perPage && (

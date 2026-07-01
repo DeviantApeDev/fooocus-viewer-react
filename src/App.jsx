@@ -96,6 +96,14 @@ export default function App() {
     })
   }, [])
 
+  const setSelection = useCallback((srcs, selected) => {
+    setSelectedImages(prev => {
+      const next = new Set(prev)
+      srcs.forEach(src => { if (selected) next.add(src); else next.delete(src) })
+      return next
+    })
+  }, [])
+
   const handleDeleteConfirm = useCallback(async () => {
     const images = Array.from(selectedImages).map(src => ({
       dateStr: src.split('_')[0],
@@ -432,6 +440,7 @@ export default function App() {
           addToast={addToast}
           selectedImages={selectedImages}
           toggleSelection={toggleSelection}
+          setSelection={setSelection}
         />
       )}
 
