@@ -522,7 +522,7 @@ export default function App() {
 
       <NotificationToast toasts={toasts} removeToast={removeToast} />
 
-      <DeleteBar count={selectedImages.size} onClick={() => setShowDeleteConfirm(true)} />
+      <DeleteBar count={selectedImages.size} onClick={() => setShowDeleteConfirm(true)} onClearSelection={clearSelection} />
 
       {showDeleteConfirm && (
         <DeleteConfirmModal
