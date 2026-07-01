@@ -45,7 +45,16 @@ export default function App() {
   const [selectedImages, setSelectedImages] = useState(new Set())
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showDayDeleteConfirm, setShowDayDeleteConfirm] = useState(false)
-  const { favoriteImages, toggleFavorite, isFavorite, showFavorites, setShowFavorites } = useFavorites()
+
+  const addToast = useCallback((content, theme = 'dark') => {
+    const id = Date.now() + Math.random()
+    setToasts(prev => [...prev, { id, content, theme }])
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id))
+    }, 4000)
+  }, [])
+
+  const { favoriteImages, toggleFavorite, isFavorite, showFavorites, setShowFavorites } = useFavorites(addToast)
   const lastLogSizeRef = useRef(null)
   const playSoundRef = useRef(true)
   const nbTodayImagesRef = useRef(0)
@@ -68,14 +77,6 @@ export default function App() {
   const filteredAllImages = showFavorites
     ? allImages.filter(img => favoriteImages.has(img.src))
     : allImages
-
-  const addToast = useCallback((content, theme = 'dark') => {
-    const id = Date.now() + Math.random()
-    setToasts(prev => [...prev, { id, content, theme }])
-    setTimeout(() => {
-      setToasts(prev => prev.filter(t => t.id !== id))
-    }, 4000)
-  }, [])
 
   const removeToast = useCallback((id) => {
     setToasts(prev => prev.filter(t => t.id !== id))
@@ -149,10 +150,10 @@ export default function App() {
         setShowDeleteConfirm(false)
         addToast(`Deleted ${result.deleted.length} image${result.deleted.length > 1 ? 's' : ''}`, 'dark')
       } else {
-        addToast(`Failed to delete some images: ${result.failed?.map(f => f.error).join(', ')}`, 'dark')
+        addToast('Deleting images requires the server to be running', 'dark')
       }
     } catch (err) {
-      addToast(`Delete request failed: ${err.message}`, 'dark')
+      addToast('Deleting images requires the server to be running', 'dark')
     }
   }, [selectedImages, zoomImage, addToast, clearSelection])
 
@@ -235,10 +236,10 @@ export default function App() {
 
         addToast(`Deleted ${dateStr} and ${result.deletedCount} file${result.deletedCount !== 1 ? 's' : ''}`, 'dark')
       } else {
-        addToast(`Failed to delete day: ${result.error}`, 'dark')
+        addToast('Deleting a day requires the server to be running', 'dark')
       }
     } catch (err) {
-      addToast(`Delete day request failed: ${err.message}`, 'dark')
+      addToast('Deleting a day requires the server to be running', 'dark')
     }
   }, [dateStr, isToday, workingDates, addToast, goToDate])
 

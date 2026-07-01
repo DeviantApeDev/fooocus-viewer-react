@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 
-export default function useFavorites() {
+export default function useFavorites(addToast) {
   const [favoriteImages, setFavoriteImages] = useState(new Set())
   const [showFavorites, setShowFavorites] = useState(() => {
     return localStorage.getItem('showFavorites') === 'true'
@@ -8,39 +8,45 @@ export default function useFavorites() {
 
   useEffect(() => {
     fetch('/api/favorites')
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error(res.status)
+        return res.json()
+      })
       .then(({ favorites }) => {
         setFavoriteImages(new Set(favorites))
       })
-      .catch(() => {})
+      .catch(() => {
+        fetch('/file=outputs/favorites.json')
+          .then(res => {
+            if (!res.ok) throw new Error(res.status)
+            return res.json()
+          })
+          .then(favorites => {
+            setFavoriteImages(new Set(favorites))
+          })
+          .catch((err) => {
+            console.error('Failed to load favorites:', err)
+          })
+      })
   }, [])
 
   const toggleFavorite = useCallback((src) => {
-    setFavoriteImages(prev => {
-      const next = new Set(prev)
-      if (next.has(src)) next.delete(src)
-      else next.add(src)
-      return next
-    })
-
     fetch('/api/favorites/toggle', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ src }),
     })
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error(res.status)
+        return res.json()
+      })
       .then(({ favorites }) => {
         setFavoriteImages(new Set(favorites))
       })
       .catch(() => {
-        setFavoriteImages(prev => {
-          const next = new Set(prev)
-          if (next.has(src)) next.delete(src)
-          else next.add(src)
-          return next
-        })
+        addToast('Favorites require the server to be running', 'dark')
       })
-  }, [])
+  }, [addToast])
 
   const isFavorite = useCallback((src) => {
     return favoriteImages.has(src)
