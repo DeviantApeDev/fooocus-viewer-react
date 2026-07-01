@@ -12,6 +12,7 @@ import NotificationToast from './components/NotificationToast'
 import ConfigPanel from './components/ConfigPanel'
 import DeleteBar from './components/DeleteBar'
 import DeleteConfirmModal from './components/DeleteConfirmModal'
+import DeleteDayConfirmModal from './components/DeleteDayConfirmModal'
 
 export default function App() {
   const [date, setDate] = useState(() => {
@@ -42,6 +43,7 @@ export default function App() {
   const [nbTodayImages, setNbTodayImages] = useState(0)
   const [selectedImages, setSelectedImages] = useState(new Set())
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [showDayDeleteConfirm, setShowDayDeleteConfirm] = useState(false)
   const lastLogSizeRef = useRef(null)
   const playSoundRef = useRef(true)
   const nbTodayImagesRef = useRef(0)
@@ -180,6 +182,47 @@ export default function App() {
     const day = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]))
     setDate(day)
   }, [])
+
+  const handleDeleteDayConfirm = useCallback(async () => {
+    try {
+      const res = await fetch('/api/delete-day', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dateStr }),
+      })
+      const result = await res.json()
+
+      if (result.success) {
+        setWorkingDates(prev => prev.filter(d => d !== dateStr))
+        setDetailDates(prev => {
+          const next = { ...prev }
+          delete next[dateStr]
+          return next
+        })
+        setAllImages(prev => prev.filter(img => img.dt !== dateStr))
+        setData([])
+        setShowDayDeleteConfirm(false)
+
+        if (isToday) {
+          setAutoReload(false)
+          localStorage.removeItem("autoReloadToday")
+        }
+
+        const remaining = workingDates.filter(d => d !== dateStr)
+        if (remaining.length > 0) {
+          goToDate(remaining[0])
+        } else {
+          goToDate(getDateStr(new Date()))
+        }
+
+        addToast(`Deleted ${dateStr} and ${result.deletedCount} file${result.deletedCount !== 1 ? 's' : ''}`, 'dark')
+      } else {
+        addToast(`Failed to delete day: ${result.error}`, 'dark')
+      }
+    } catch (err) {
+      addToast(`Delete day request failed: ${err.message}`, 'dark')
+    }
+  }, [dateStr, isToday, workingDates, addToast, goToDate])
 
   const fetchData = useCallback(({ silent } = {}) => {
     if (!isToday) setAutoReload(false)
@@ -373,6 +416,7 @@ export default function App() {
         showCalendar={() => { if (promiseAll) { setShowCalendar(prev => !prev); setShowSearch(false) } else addToast("All logs and images are not processed. Please wait...") }}
         showConfigPanel={() => setShowConfig(prev => !prev)}
         promiseAll={promiseAll}
+        onDeleteDay={() => setShowDayDeleteConfirm(true)}
       />
 
       {showConfig && <ConfigPanel onClose={() => setShowConfig(false)} />}
@@ -476,6 +520,15 @@ export default function App() {
           selectedImages={selectedImages}
           onConfirm={handleDeleteConfirm}
           onCancel={() => setShowDeleteConfirm(false)}
+        />
+      )}
+
+      {showDayDeleteConfirm && (
+        <DeleteDayConfirmModal
+          dateStr={dateStr}
+          imageCount={data ? data.length : 0}
+          onConfirm={handleDeleteDayConfirm}
+          onCancel={() => setShowDayDeleteConfirm(false)}
         />
       )}
 

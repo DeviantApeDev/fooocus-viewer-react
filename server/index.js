@@ -2,7 +2,7 @@ import 'dotenv/config'
 import express from 'express'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
-import { readFile, writeFile, unlink, stat } from 'fs/promises'
+import { readFile, writeFile, unlink, stat, readdir, rm } from 'fs/promises'
 import { existsSync } from 'fs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -81,6 +81,41 @@ app.post('/api/delete-images', async (req, res) => {
   }
 
   res.json({ success: failed.length === 0, deleted, failed })
+})
+
+app.post('/api/delete-day', async (req, res) => {
+  const { dateStr } = req.body
+  if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    return res.status(400).json({ success: false, error: 'Valid dateStr required (YYYY-MM-DD)' })
+  }
+
+  const dirPath = join(OUTPUTS_DIR, dateStr)
+
+  try {
+    await stat(dirPath)
+  } catch (e) {
+    return res.status(404).json({ success: false, error: `Folder ${dateStr} not found` })
+  }
+
+  try {
+    const files = await readdir(dirPath)
+    let deletedCount = 0
+
+    for (const file of files) {
+      try {
+        await unlink(join(dirPath, file))
+        deletedCount++
+      } catch (e) {
+        console.warn(`[delete-day] Could not delete file ${file}: ${e.message}`)
+      }
+    }
+
+    await rm(dirPath, { recursive: true, force: true })
+
+    res.json({ success: true, dateStr, deletedCount })
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message })
+  }
 })
 
 // Serve Fooocus outputs (date folders, images, log.html)
